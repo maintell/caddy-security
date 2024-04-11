@@ -16,6 +16,8 @@ package security
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/caddyserver/caddy/v2"
 	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
 	"github.com/greenpau/caddy-security/pkg/util"
@@ -25,7 +27,6 @@ import (
 	"github.com/greenpau/go-authcrunch/pkg/authn/ui"
 	"github.com/greenpau/go-authcrunch/pkg/authz/options"
 	"github.com/greenpau/go-authcrunch/pkg/errors"
-	"strings"
 )
 
 const (
@@ -36,37 +37,39 @@ const (
 //
 // Syntax:
 //
-//   authentication portal <name> {
+//	  authentication portal <name> {
 //
-//	   crypto key sign-verify <shared_secret>
+//		crypto key sign-verify <shared_secret>
 //
-//	   ui {
-//	     template <login|portal> <file_path>
-//	     logo_url <file_path|url_path>
-//	     logo_description <value>
-//       custom css path <path>
-//       custom js path <path>
-//       custom html header path <path>
-//       static_asset <uri> <content_type> <path>
-//       allow settings for role <role>
-//	   }
+//		ui {
+//			template <login|portal> <file_path>
+//			logo_url <file_path|url_path>
+//			logo_description <value>
+//			custom css path <path>
+//			custom js path <path>
+//			custom html header path <path>
+//			static_asset <uri> <content_type> <path>
+//			allow settings for role <role>
+//		}
 //
-//     cookie domain <name>
-//     cookie path <name>
-//     cookie lifetime <seconds>
-//     cookie samesite <lax|strict|none>
-//     cookie insecure <on|off>
+//	    cookie domain <name>
+//	    cookie path <name>
+//	    cookie lifetime <seconds>
+//	    cookie samesite <lax|strict|none>
+//	    cookie insecure <on|off>
 //
-//     validate source address
+//	    validate source address
 //
-//     enable source ip tracking
-//     enable admin api
-//     enable identity store <name>
-//     enable identity provider <name>
-//     enable sso provider <name>
-//     enable user registration <name>
-//   }
+//	    enable source ip tracking
+//	    enable admin api
+//	    enable identity store <name>
+//	    enable identity provider <name>
+//	    enable sso provider <name>
+//	    enable user registration <name>
 //
+//		trust logout redirect uri domain [exact|partial|prefix|suffix|regex] <domain_name> path [exact|partial|prefix|suffix|regex] <path>
+//
+//	}
 func parseCaddyfileAuthentication(d *caddyfile.Dispenser, repl *caddy.Replacer, cfg *authcrunch.Config) error {
 	// rootDirective is config key prefix.
 	var rootDirective string
@@ -85,6 +88,9 @@ func parseCaddyfileAuthentication(d *caddyfile.Dispenser, repl *caddy.Replacer, 
 			CookieConfig:          &cookie.Config{},
 			TokenValidatorOptions: &options.TokenValidatorOptions{},
 			TokenGrantorOptions:   &options.TokenGrantorOptions{},
+			API: &authn.APIConfig{
+				ProfileEnabled: true,
+			},
 		}
 		for nesting := d.Nesting(); d.NextBlock(nesting); {
 			k := d.Val()
@@ -96,7 +102,7 @@ func parseCaddyfileAuthentication(d *caddyfile.Dispenser, repl *caddy.Replacer, 
 					return err
 				}
 			case "cookie":
-				if err := parseCaddyfileAuthPortalCookie(d, repl, p, rootDirective, v); err != nil {
+				if err := parseCaddyfileAuthPortalCookie(d, repl, p, rootDirective, util.FindReplaceAll(repl, v)); err != nil {
 					return err
 				}
 			case "backend", "backends":
@@ -109,7 +115,7 @@ func parseCaddyfileAuthentication(d *caddyfile.Dispenser, repl *caddy.Replacer, 
 				if err := parseCaddyfileAuthPortalTransform(d, repl, p, rootDirective, v); err != nil {
 					return err
 				}
-			case "enable", "validate":
+			case "enable", "validate", "trust":
 				if err := parseCaddyfileAuthPortalMisc(d, repl, p, rootDirective, k, v); err != nil {
 					return err
 				}

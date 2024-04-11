@@ -163,6 +163,9 @@ func TestParseCaddyfileAuthentication(t *testing.T) {
 						]
 					  }
 					],
+                    "api": {
+                      "profile_enabled": true
+                    },
 					"cookie_config": {
 					  "domains": {
 						"contoso.com": {
@@ -179,6 +182,15 @@ func TestParseCaddyfileAuthentication(t *testing.T) {
 					  "azure",
 					  "okta"
 					],
+                            "portal_admin_roles": {
+                                "authp/admin": true
+                            },
+                            "portal_user_roles": {
+                                "authp/user": true
+                            },
+                            "portal_guest_roles": {
+                                "authp/guest": true
+                            },
 					"token_validator_options": {
 					  "validate_source_address": true
 					},
@@ -259,7 +271,7 @@ func TestParseCaddyfileAuthentication(t *testing.T) {
               }
             }`),
 			shouldErr: true,
-			err:       fmt.Errorf("%s:%d - Error during parsing: Wrong argument count or unexpected line ending after '%s', import chain: ['']", tf, 3, "foo"),
+			err:       fmt.Errorf("wrong argument count or unexpected line ending after '%s', at %s:%d", "foo", tf, 3),
 		},
 		{
 			name: "test unsupported authentication portal keyword",

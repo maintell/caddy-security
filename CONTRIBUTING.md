@@ -5,27 +5,13 @@
 I'd love to accept your pull request! Before I can take them, we have to jump a
 couple of legal hurdles.
 
-***NOTE***: Only original source code from you and other people that have
-signed the CLA can be accepted into the main repository.
+Please see [`assets/cla/CLA.md`](assets/cla/CLA.md).
 
-Please fill out either the individual or corporate Contributor License Agreement (CLA).
-* If you are an individual writing original source code and you're sure you own the
-  intellectual property, then you'll need to sign an [individual CLA](/assets/cla/individual_cla.md).
-* If you work for a company that wants to allow you to contribute your work, then
-  you'll need to sign a [corporate CLA](/assets/cla/corporate_cla.md).
+Please follow these steps to add CLA consent:
 
-Follow either of the two links above to access the appropriate CLA. Next,
-accept the CLA in the following way.
-
-For Individual CLA:
-1. Review the Individual CLA provided in `assets/cla/individual_cla.md`
-2. Consent to the CLA by adding your name and email address to
-  the `assets/cla/consent.yaml` file.
-
-For Corporate CLA:
-1. Review the Corporate CLA provided in `assets/cla/corporate_cla.md`
-2. Consent to the CLA by adding your name and email address, and business
-  name to the `assets/cla/consent.yaml` file.
+1. Add your info to `assets/cla/consent.yaml`
+2. Agree to CLA via comment in PR. See [here](https://github.com/contributor-assistant/github-action#demo-for-step-2-and-3)
+  how to do it.
 
 ## Pull Request Checklist
 
@@ -78,13 +64,19 @@ Note: the referenced versions must match.
 ```
 module github.com/greenpau/caddy-security
 
-go 1.16
+go 1.21
 
 require (
-    github.com/greenpau/go-authcrunch v1.0.40
+    github.com/greenpau/go-authcrunch v1.1.4
 )
 
-replace github.com/greenpau/go-authcrunch v1.0.40 => /home/greenpau/dev/go/src/github.com/greenpau/go-authcrunch
+replace github.com/greenpau/go-authcrunch v1.1.4 => /home/greenpau/dev/go/src/github.com/greenpau/go-authcrunch
+```
+
+Alternatively:
+
+```bash
+go mod edit -replace github.com/greenpau/go-authcrunch@v1.1.4=/home/greenpau/dev/go/src/github.com/greenpau/go-authcrunch@v1.0.48
 ```
 
 Then, modify `Makefile` such that that replacement passes to `xcaddy` builder:
@@ -93,7 +85,7 @@ Then, modify `Makefile` such that that replacement passes to `xcaddy` builder:
         @mkdir -p ../xcaddy-$(PLUGIN_NAME) && cd ../xcaddy-$(PLUGIN_NAME) && \
                 xcaddy build $(CADDY_VERSION) --output ../$(PLUGIN_NAME)/bin/caddy \
                 --with github.com/greenpau/caddy-security@$(LATEST_GIT_COMMIT)=$(BUILD_DIR) \
-                --with github.com/greenpau/go-authcrunch@v1.0.40=/home/greenpau/dev/go/src/github.com/greenpau/go-authcrunch
+                --with github.com/greenpau/go-authcrunch@v1.1.4=/home/greenpau/dev/go/src/github.com/greenpau/go-authcrunch
 ```
 
 Once all the necessary packages are installed, you should be ready to compile
